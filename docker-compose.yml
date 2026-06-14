@@ -16,6 +16,17 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   web:
     build: .
     restart: unless-stopped
@@ -31,8 +42,47 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: gyroerp.settings.development
       DATABASE_URL: postgres://gyroerp:gyroerp@db:5432/gyroerp
+      CELERY_BROKER_URL: redis://redis:6379/1
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery:
+    build: .
+    restart: unless-stopped
+    command: celery -A gyrokernel worker -l INFO
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: gyroerp.settings.development
+      DATABASE_URL: postgres://gyroerp:gyroerp@db:5432/gyroerp
+      CELERY_BROKER_URL: redis://redis:6379/1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    build: .
+    restart: unless-stopped
+    command: celery -A gyrokernel beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: gyroerp.settings.development
+      DATABASE_URL: postgres://gyroerp:gyroerp@db:5432/gyroerp
+      CELERY_BROKER_URL: redis://redis:6379/1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:
