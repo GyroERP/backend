@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$HEAD_REF" in
-            feature/*|fix/*|hotfix/*|release/*|dependabot/*)
+            feature/*|fix/*|hotfix/*|release/*|chore/*|dependabot/*)
               echo "Branch name OK: $HEAD_REF"
               ;;
             development|staging|beta-release|main)
