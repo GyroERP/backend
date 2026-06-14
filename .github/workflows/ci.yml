@@ -4,18 +4,52 @@ on:
   push:
     branches:
       - main
+      - development
+      - staging
+      - beta-release
+      - "release/**"
   pull_request:
     branches:
       - main
+      - development
+      - staging
+      - beta-release
+      - "release/**"
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  branch-name:
+    name: Branch name
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch naming convention
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          case "$HEAD_REF" in
+            feature/*|fix/*|hotfix/*|release/*|dependabot/*)
+              echo "Branch name OK: $HEAD_REF"
+              ;;
+            development|staging|beta-release|main)
+              echo "Protected branch update via PR: $HEAD_REF"
+              ;;
+            *)
+              echo "Invalid branch name: $HEAD_REF"
+              echo "Use: feature/<issue#>-name, fix/<issue#>-name, hotfix/<issue#>-name, release/<semver>"
+              exit 1
+              ;;
+          esac
+
   django-checks:
     name: Django checks
     runs-on: ubuntu-latest
+    needs: branch-name
+    if: always() && (needs.branch-name.result == 'success' || needs.branch-name.result == 'skipped')
 
     env:
       DJANGO_SETTINGS_MODULE: gyroerp.settings.development
@@ -53,6 +87,8 @@ jobs:
   lint:
     name: Ruff
     runs-on: ubuntu-latest
+    needs: branch-name
+    if: always() && (needs.branch-name.result == 'success' || needs.branch-name.result == 'skipped')
 
     steps:
       - name: Checkout
@@ -73,3 +109,22 @@ jobs:
 
       - name: Format check
         run: ruff format --check .
+
+  staging-qa:
+    name: Staging QA checks
+    runs-on: ubuntu-latest
+    needs: [django-checks, lint]
+    if: |
+      always() &&
+      needs.django-checks.result == 'success' &&
+      needs.lint.result == 'success' &&
+      (github.base_ref == 'staging' || github.base_ref == 'beta-release' || github.ref_name == 'staging' || github.ref_name == 'beta-release')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Staging QA gate
+        run: |
+          echo "Staging / beta promotion gate passed."
+          echo "Add integration or smoke tests here as the platform grows."

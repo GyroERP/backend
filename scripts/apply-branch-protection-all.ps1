@@ -15,7 +15,7 @@ $rules = @(
 foreach ($rule in $rules) {
     $path = Join-Path $base $rule.file
     if (-not (Test-Path $path)) {
-        Write-Output "Skip $($rule.branch) — missing $path"
+        Write-Output ("Skip " + $rule.branch + " missing " + $path)
         continue
     }
     Write-Output "Protecting $owner/$Repo :: $($rule.branch)"
