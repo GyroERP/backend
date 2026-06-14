@@ -1,0 +1,3 @@
+{
+  "query": "query { organization(login: \"GyroERP\") { projectV2(number: 3) { id title fields(first: 30) { nodes { ... on ProjectV2SingleSelectField { id name options { id name } } ... on ProjectV2Field { id name } } } } } }"
+}
