@@ -95,6 +95,21 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "gyrokernel.authentication.APIKeyAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "gyrokernel.permissions.GyroPermission",
+    ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "gyrokernel.throttles.APIKeyThrottle",
+        "gyrokernel.throttles.AnonThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "apikey": "1000/hour",
+        "anon": "100/hour",
+    },
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
@@ -103,6 +118,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
 }
+
+# Optional Fernet key for encrypting sensitive DB fields (e.g. SMTP passwords).
+# Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# Set via environment variable in production; omit in development.
+GYROERP_FERNET_KEY = os.environ.get("GYROERP_FERNET_KEY", "")
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/1")
 CELERY_RESULT_BACKEND = "django-db"

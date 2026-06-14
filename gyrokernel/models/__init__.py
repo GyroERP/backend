@@ -36,6 +36,34 @@ from .access import RecordRule
 # Concrete kernel models — Phase 2: attachments
 from .attachment import Attachment
 
+# Concrete kernel models — Phase 3: security
+from .access_control import GroupExtension, ModelPermission, get_effective_group_ids, get_effective_groups
+from .apikey import APIKey, APIKeyScope
+
+# Concrete kernel models — Phase 3: communication
+from .mail_server import MailEncryption, MailServer
+
+# Concrete kernel models — Phase 3: UX
+from .field_default import FieldDefault
+from .saved_filter import SavedFilter
+
+# Concrete kernel models — Phase 3: user
+from .user_ext import (
+    DisplayDensity,
+    EmailDigestFrequency,
+    FontSize,
+    LoginEvent,
+    LoginLog,
+    Theme,
+    UserPreferences,
+)
+
+# Concrete kernel models — Phase 3: banking
+from .banking import AccountType, Bank, PartnerBank
+
+# Concrete kernel models — Phase 3: precision
+from .decimal_precision import DecimalPrecision
+
 __all__ = [
     # Abstract
     "UUIDModel",
@@ -77,4 +105,31 @@ __all__ = [
     "RecordRule",
     # Phase 2: attachment
     "Attachment",
+    # Phase 3: security
+    "ModelPermission",
+    "GroupExtension",
+    "get_effective_group_ids",
+    "get_effective_groups",
+    "APIKey",
+    "APIKeyScope",
+    # Phase 3: communication
+    "MailServer",
+    "MailEncryption",
+    # Phase 3: UX
+    "FieldDefault",
+    "SavedFilter",
+    # Phase 3: user
+    "LoginLog",
+    "LoginEvent",
+    "UserPreferences",
+    "EmailDigestFrequency",
+    "DisplayDensity",
+    "Theme",
+    "FontSize",
+    # Phase 3: banking
+    "Bank",
+    "PartnerBank",
+    "AccountType",
+    # Phase 3: precision
+    "DecimalPrecision",
 ]
