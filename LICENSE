@@ -1,0 +1,278 @@
+GyroERP Community License v1.0
+
+Copyright (c) 2026 GyroERP.
+All Rights Reserved.
+
+IMPORTANT NOTICE
+
+This License is a source-available software license. It is not an
+open-source license as defined by the Open Source Initiative (OSI).
+
+By downloading, accessing, using, copying, modifying, or otherwise
+interacting with the Software, you agree to be bound by the terms of
+this License.
+
+--------------------------------------------------------------------
+1. DEFINITIONS
+--------------------------------------------------------------------
+
+"Software" means the GyroERP software, including source code,
+object code, documentation, configurations, database schemas,
+designs, workflows, APIs, user interfaces, and related materials.
+
+"Licensor" means GyroERP.
+
+"User" means any individual, company, organization, government,
+or other legal entity using the Software.
+
+"Commercial Use" means any use intended for commercial advantage,
+revenue generation, service delivery, resale, consulting,
+hosting, subscription services, or business operations for third parties.
+
+"Derivative Work" means any modification, enhancement,
+adaptation, translation, extension, customization, or work based
+upon the Software.
+
+--------------------------------------------------------------------
+2. OWNERSHIP
+--------------------------------------------------------------------
+
+The Software is licensed, not sold.
+
+All copyrights, patents, trademarks, trade secrets,
+database rights, and all other intellectual property rights
+related to the Software remain the exclusive property of GyroERP.
+
+No ownership rights are transferred under this License.
+
+--------------------------------------------------------------------
+3. PERMITTED USES
+--------------------------------------------------------------------
+
+Subject to compliance with this License, Users may:
+
+a) Download and access the Software.
+
+b) Review and inspect the source code.
+
+c) Use the Software internally within their own organization.
+
+d) Use the Software for personal, educational, testing,
+evaluation, and internal business purposes.
+
+e) Modify the Software solely for internal use.
+
+f) Create internal customizations for their own organization.
+
+--------------------------------------------------------------------
+4. RESTRICTIONS
+--------------------------------------------------------------------
+
+Without prior written permission from GyroERP, Users may NOT:
+
+a) Sell the Software.
+
+b) Resell the Software.
+
+c) Redistribute the Software.
+
+d) Sublicense the Software.
+
+e) Publish the Software on another repository,
+website, marketplace, or distribution platform.
+
+f) Distribute modified versions of the Software.
+
+g) Public forks are permitted solely for development,
+review, contribution, and educational purposes.
+
+Public forks may not:
+
+- Be used for commercial purposes.
+- Be rebranded.
+- Be redistributed as an alternative product.
+- Be offered as SaaS or cloud services.
+- Remove copyright or license notices.
+
+h) Offer the Software as a hosted service.
+
+i) Offer the Software as Software-as-a-Service (SaaS).
+
+j) Offer the Software as a cloud service.
+
+k) Offer the Software as a managed service.
+
+l) Commercially exploit the Software.
+
+m) Use the Software to provide services to third parties.
+
+n) Commercialize Derivative Works.
+
+o) Create competing commercial products based on the Software.
+
+p) Remove copyright notices.
+
+q) Remove license notices.
+
+r) Circumvent licensing controls.
+
+s) Reverse engineer any proprietary components not
+provided in source code form.
+
+t) Rebrand the Software.
+
+u) Use GyroERP trademarks, logos, names, icons,
+or branding without permission.
+
+--------------------------------------------------------------------
+5. COMMERCIAL LICENSES
+--------------------------------------------------------------------
+
+Any organization wishing to:
+
+- Sell the Software;
+- Redistribute the Software;
+- Host the Software for customers;
+- Offer SaaS services;
+- Offer managed services;
+- Bundle the Software with commercial offerings;
+- Create commercial derivative works;
+
+must obtain a separate written commercial license from GyroERP.
+
+Commercial licenses may include additional rights,
+permissions, warranties, and support terms.
+
+--------------------------------------------------------------------
+6. CONTRIBUTIONS
+--------------------------------------------------------------------
+
+Any contribution submitted to GyroERP, including
+code, patches, pull requests, bug fixes,
+documentation, suggestions, enhancements, or features,
+shall be deemed a Contribution.
+
+By submitting a Contribution, you grant GyroERP a perpetual,
+worldwide, irrevocable, royalty-free, transferable,
+sublicensable license to:
+
+- Use;
+- Modify;
+- Distribute;
+- Commercialize;
+- Re-license;
+- Incorporate;
+
+the Contribution into the Software and related products.
+
+You represent that you have sufficient rights to submit
+the Contribution.
+
+--------------------------------------------------------------------
+7. TRADEMARKS
+--------------------------------------------------------------------
+
+This License grants no trademark rights.
+
+"GyroERP", the GyroERP logo, and all related marks
+are trademarks of GyroERP.
+
+Users may not use GyroERP trademarks in a manner that
+suggests endorsement, affiliation, partnership,
+or ownership without prior written consent.
+
+--------------------------------------------------------------------
+8. CONFIDENTIALITY OF PROPRIETARY MATERIALS
+--------------------------------------------------------------------
+
+Any proprietary business information, non-public
+documentation, enterprise features, commercial modules,
+or related confidential materials distributed by GyroERP
+remain confidential and protected by applicable law.
+
+--------------------------------------------------------------------
+9. TERMINATION
+--------------------------------------------------------------------
+
+This License automatically terminates upon any violation
+of its terms.
+
+Upon termination, all rights granted under this License
+immediately cease.
+
+The User must:
+
+a) Stop using the Software.
+
+b) Remove all deployed instances.
+
+c) Destroy all copies under their control.
+
+d) Cease any ongoing use of derivative works.
+
+Termination does not limit any legal remedies available
+to GyroERP.
+
+--------------------------------------------------------------------
+10. DISCLAIMER OF WARRANTY
+--------------------------------------------------------------------
+
+THE SOFTWARE IS PROVIDED "AS IS".
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW,
+GYROERP DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS,
+IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING:
+
+- MERCHANTABILITY;
+- FITNESS FOR A PARTICULAR PURPOSE;
+- NON-INFRINGEMENT;
+- ACCURACY;
+- RELIABILITY.
+
+THE ENTIRE RISK ARISING FROM USE OF THE SOFTWARE
+REMAINS WITH THE USER.
+
+--------------------------------------------------------------------
+11. LIMITATION OF LIABILITY
+--------------------------------------------------------------------
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW,
+GYROERP SHALL NOT BE LIABLE FOR ANY INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, CONSEQUENTIAL,
+OR PUNITIVE DAMAGES.
+
+IN NO EVENT SHALL GYROERP'S TOTAL LIABILITY
+EXCEED ONE HUNDRED UNITED STATES DOLLARS (USD $100).
+
+--------------------------------------------------------------------
+12. GOVERNING LAW
+--------------------------------------------------------------------
+
+This License shall be governed by the laws of the
+jurisdiction in which GyroERP is legally established,
+without regard to conflict of law provisions.
+
+Any dispute shall be resolved exclusively in the
+courts of that jurisdiction.
+
+--------------------------------------------------------------------
+13. ENTIRE AGREEMENT
+--------------------------------------------------------------------
+
+This License constitutes the complete agreement
+between the parties concerning the Software.
+
+If any provision is found unenforceable,
+the remaining provisions shall remain in effect.
+
+--------------------------------------------------------------------
+14. CONTACT
+--------------------------------------------------------------------
+
+For commercial licensing, partnership inquiries,
+or legal matters, contact:
+
+legal@gyroerp.com
+
+Copyright (c) 2026 GyroERP.
+All Rights Reserved.

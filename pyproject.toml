@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gyroerp-backend"
+version = "0.1.0"
+description = "GyroERP backend API — Django REST Framework ERP platform by Muhammad Ahsan"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "GyroERP Community License v1.0" }
+authors = [{ name = "Muhammad Ahsan", email = "licensing@gyroerp.com" }]
+keywords = ["erp", "django", "rest-api", "gyroerp", "business"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django :: 5.2",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+]
+
+[project.urls]
+Homepage = "https://github.com/GyroERP/backend"
+Repository = "https://github.com/GyroERP/backend"
+Issues = "https://github.com/GyroERP/backend/issues"
+Changelog = "https://github.com/GyroERP/backend/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["gyroerp*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "gyroerp.settings.development"
+python_files = ["test_*.py", "*_test.py"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["gyroerp"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["gyroerp", "manage.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["gyroerp"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

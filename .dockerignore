@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+venv
+__pycache__
+*.py[cod]
+*.egg-info
+.ruff_cache
+.pytest_cache
+htmlcov
+.coverage
+.tox
+.mypy_cache
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Local data
+db.sqlite3
+media/
+staticfiles/
+logs/
+
+# IDE
+.idea
+.vscode
+.cursor
+
+# Docs build
+docs/_build
+
+# OS
+.DS_Store
+Thumbs.db

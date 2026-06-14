@@ -1,0 +1,84 @@
+# =============================================================================
+# GyroERP Backend — Git attributes
+# =============================================================================
+# Normalizes line endings and marks binary files so diffs stay clean across
+# Windows, macOS, and Linux.
+# =============================================================================
+
+# Default: normalize text files to LF in the repository
+* text=auto eol=lf
+
+# Source code
+*.py            text eol=lf diff=python
+*.pyi           text eol=lf
+*.toml          text eol=lf
+*.ini           text eol=lf
+*.cfg           text eol=lf
+
+# Web & templates
+*.html          text eol=lf diff=html
+*.css           text eol=lf diff=css
+*.scss          text eol=lf
+*.js            text eol=lf
+*.jsx           text eol=lf
+*.ts            text eol=lf
+*.tsx           text eol=lf
+*.json          text eol=lf
+*.yaml          text eol=lf
+*.yml           text eol=lf
+*.xml           text eol=lf
+*.svg           text eol=lf
+
+# Django / i18n
+*.po            text eol=lf
+*.pot           text eol=lf
+
+# Docs & config
+*.md            text eol=lf diff=markdown
+*.txt           text eol=lf
+*.rst           text eol=lf
+.editorconfig   text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+Dockerfile      text eol=lf
+Makefile        text eol=lf
+
+# Shell scripts (LF even on Windows for CI/Linux deploys)
+*.sh            text eol=lf
+
+# Windows scripts keep CRLF when checked out on Windows
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+
+# Binary assets — do not diff or line-normalize
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.webp          binary
+*.ico           binary
+*.pdf           binary
+*.zip           binary
+*.gz            binary
+*.tar           binary
+*.7z            binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
+*.sqlite3       binary
+*.db            binary
+*.pyc           binary -diff
+*.pyo           binary -diff
+*.pyd           binary -diff
+*.so            binary -diff
+*.dll           binary -diff
+*.exe           binary -diff
+
+# GitHub linguist — exclude vendored/generated paths from language stats
+.venv           linguist-vendored
+staticfiles     linguist-generated
+static_root     linguist-generated
+media           linguist-vendored
+migrations      linguist-generated

@@ -1,0 +1,342 @@
+# =============================================================================
+# GyroERP Backend — Django .gitignore
+# =============================================================================
+# Keeps secrets, local databases, generated assets, and machine-specific
+# files out of version control. Adjust sections as the project grows.
+# =============================================================================
+
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Type checkers & linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+.pyright/
+
+# Test & coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+pytest_cache/
+pytestdebug.log
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# pyenv / Python version managers
+.python-version
+.pdm-python
+
+
+# =============================================================================
+# Virtual environments
+# =============================================================================
+.venv/
+venv/
+ENV/
+env/
+.env.bak
+.virtualenv/
+
+
+# =============================================================================
+# Environment variables & secrets (never commit)
+# =============================================================================
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+*.secrets
+
+
+# =============================================================================
+# Django
+# =============================================================================
+
+# Local SQLite database (default dev DB)
+*.sqlite3
+*.sqlite3-journal
+*.sqlite
+*.db
+
+# PostgreSQL / MySQL local dumps & sockets
+*.sql
+*.dump
+*.backup
+pgdata/
+mysql-data/
+
+# Collected static files (run collectstatic in deploy)
+/staticfiles/
+/static_root/
+/collected_static/
+
+# User-uploaded media (invoices, attachments, avatars, etc.)
+/media/
+/media_root/
+
+# Local settings overrides (production secrets, debug flags)
+local_settings.py
+settings_local.py
+**/settings/local.py
+**/settings/*.local.py
+
+# Django secret key / env-specific config fragments
+secret_key.txt
+
+# Django debug toolbar / silk profiling exports
+debug_toolbar/
+silk_profiles/
+
+# Session / cache files on disk (if using file-based backends)
+django_cache/
+sessions/
+
+# Compiled translation files (compile on deploy from *.po)
+*.mo
+
+# Migration merge conflict artifacts (keep actual migrations tracked)
+# *.py in migrations/ should stay tracked — only ignore temp merge files if any
+
+
+# =============================================================================
+# Django REST Framework / API docs (generated)
+# =============================================================================
+schema.yml
+schema.yaml
+openapi.json
+openapi.yaml
+redoc-static/
+swagger-ui-dist/
+
+
+# =============================================================================
+# Celery / async task queues (common in ERP backends)
+# =============================================================================
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.db
+celery_worker.log
+flower.db
+
+
+# =============================================================================
+# Redis / caching (local data dirs)
+# =============================================================================
+dump.rdb
+*.rdb
+redis-data/
+
+
+# =============================================================================
+# Logs & runtime
+# =============================================================================
+logs/
+*.log
+log/
+*.pid
+*.seed
+*.pid.lock
+run/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+
+# =============================================================================
+# Application server / deployment (Gunicorn, uWSGI, etc.)
+# =============================================================================
+*.sock
+gunicorn.ctl
+uwsgi.ini.local
+supervisor.sock
+
+
+# =============================================================================
+# Docker & containers (optional local overrides)
+# =============================================================================
+docker-compose.override.yml
+docker-compose.local.yml
+.docker/
+*.dockerignore.local
+
+
+# =============================================================================
+# Node (if frontend assets are built inside backend, e.g. django-vite)
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json.local
+
+
+# =============================================================================
+# IDE & editors
+# =============================================================================
+
+# VS Code / Cursor
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.cursor/
+
+# JetBrains (PyCharm, IntelliJ)
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+
+# =============================================================================
+# Operating system
+# =============================================================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# =============================================================================
+# Backup & archive files
+# =============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+
+# =============================================================================
+# ERP / business data exports (do not commit customer or financial data)
+# =============================================================================
+exports/
+imports/
+reports/generated/
+data/dumps/
+data/imports/
+*.csv.local
+*.xlsx.local
+*.xls.local
+
+
+# =============================================================================
+# Misc local tooling
+# =============================================================================
+.sass-cache/
+.parcel-cache/
+.webpack/
+*.map.local
+local_notes.txt
+scratch/
+sandbox/
+playground/
