@@ -19,6 +19,17 @@ internationalization, timezone-aware data, and a scalable API-first architecture
 | [GyroERP/database](https://github.com/GyroERP/database) | Database schemas and migrations |
 | [GyroERP/.github](https://github.com/GyroERP/.github) | Organization profile and community docs |
 
+## Branching & releases
+
+All backend work follows the **development → staging → beta-release → main** pipeline.
+
+| Doc | Purpose |
+|-----|---------|
+| [BRANCHING.md](BRANCHING.md) | Branch rules, naming, PR workflow |
+| [RELEASE.md](RELEASE.md) | Versioning, tags, GitHub Releases |
+
+**Active integration branch:** `development` — always branch from `development`, never from `main`.
+
 ## Tech stack
 
 - **Python 3.12+**
