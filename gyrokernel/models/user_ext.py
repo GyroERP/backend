@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from .base import TimestampedModel, UUIDModel
@@ -16,15 +17,17 @@ class LoginEvent(models.TextChoices):
     SUCCESS = "success", "Success"
     FAILED = "failed", "Failed"
     LOCKED = "locked", "Account Locked"
+    LOGOUT = "logout", "Logged Out"
     API_KEY = "api_key", "API Key Auth"
 
 
 class LoginLog(UUIDModel):
     """
-    Authentication event log — one row per login attempt.
+    Authentication event log — one row per login attempt or logout.
 
-    Connected to Django signals (user_logged_in, user_login_failed) and
-    to APIKeyAuthentication.  Used for audit and brute-force detection.
+    Connected to Django signals (user_logged_in, user_login_failed,
+    user_logged_out) and to APIKeyAuthentication.  Used for audit trail
+    (ISO 27001 A.12.4.1) and brute-force detection (A.9.4.2).
     """
 
     user = models.ForeignKey(
@@ -83,8 +86,9 @@ class LoginLog(UUIDModel):
     @classmethod
     def recent_failed_count(cls, user, window_minutes: int = 10) -> int:
         """Count failed login attempts for a user in the last window_minutes."""
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
 
         cutoff = timezone.now() - timedelta(minutes=window_minutes)
         return cls.objects.filter(
@@ -92,6 +96,52 @@ class LoginLog(UUIDModel):
             event=LoginEvent.FAILED,
             timestamp__gte=cutoff,
         ).count()
+
+    @classmethod
+    def is_locked(cls, user, window_minutes: int | None = None, max_attempts: int | None = None) -> bool:
+        """
+        Return True if the user's account is currently locked.
+
+        Checks for an explicit LOCKED event within the window, OR if the
+        number of recent FAILED events meets or exceeds max_attempts.
+
+        ISO 27001 A.9.4.2
+        """
+        window_minutes = window_minutes or _brute_force_window()
+        max_attempts = max_attempts or _brute_force_max()
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        cutoff = timezone.now() - timedelta(minutes=window_minutes)
+
+        # Explicit lock event takes priority
+        if cls.objects.filter(user=user, event=LoginEvent.LOCKED, timestamp__gte=cutoff).exists():
+            return True
+
+        # Enough failures to trigger lockout
+        failed = cls.objects.filter(
+            user=user, event=LoginEvent.FAILED, timestamp__gte=cutoff
+        ).count()
+        return failed >= max_attempts
+
+    @classmethod
+    def is_locked_by_username(cls, username: str) -> bool:
+        """
+        Check lockout by username string (for use before the User object is loaded).
+
+        Looks up the User first; returns False if the user does not exist
+        so unrecognised usernames don't get an information-disclosing delay.
+        """
+        try:
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            user = User.objects.get(username=username)
+            return cls.is_locked(user)
+        except Exception:
+            return False
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +326,19 @@ class UserPreferences(UUIDModel, TimestampedModel):
     def __str__(self) -> str:
         return f"Preferences({self.user})"
 
+    def clean(self):
+        # Validate IANA timezone string to prevent garbage being stored.
+        # Uses the `zoneinfo` stdlib (Python 3.9+); falls back gracefully if
+        # tzdata is not installed for the requested zone.
+        if self.timezone and self.timezone != "UTC":
+            try:
+                import zoneinfo
+                zoneinfo.ZoneInfo(self.timezone)
+            except (zoneinfo.ZoneInfoNotFoundError, KeyError):
+                raise ValidationError(
+                    {"timezone": f"'{self.timezone}' is not a valid IANA timezone identifier."}
+                )
+
     def get_module_pref(self, module: str, key: str, default=None):
         """Read a module-scoped preference from the data bag."""
         return (self.data or {}).get(module, {}).get(key, default)
@@ -286,3 +349,15 @@ class UserPreferences(UUIDModel, TimestampedModel):
             self.data = {}
         self.data.setdefault(module, {})[key] = value
         type(self).objects.filter(pk=self.pk).update(data=self.data)
+
+
+# ---------------------------------------------------------------------------
+# Private helpers — read brute-force thresholds from Django settings
+# ---------------------------------------------------------------------------
+
+def _brute_force_max() -> int:
+    return getattr(settings, "GYROERP_BRUTE_FORCE_MAX_ATTEMPTS", 10)
+
+
+def _brute_force_window() -> int:
+    return getattr(settings, "GYROERP_BRUTE_FORCE_WINDOW_MINUTES", 10)

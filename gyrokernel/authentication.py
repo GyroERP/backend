@@ -33,6 +33,11 @@ class APIKeyAuthentication(BaseAuthentication):
     KEYWORD = "ApiKey"
 
     def authenticate(self, request):
+        # Clear stale key from previous request on this thread before doing
+        # anything else — prevents key context bleeding into session-auth requests.
+        # ISO 27001 A.9.4.2
+        _local.api_key = None
+
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         if not auth_header.startswith(self.KEYWORD + " "):
             return None  # No API key header — try next authenticator
@@ -44,7 +49,7 @@ class APIKeyAuthentication(BaseAuthentication):
         api_key = APIKey.authenticate(raw_key, ip_address=ip)
 
         if api_key is None:
-            self._log_failure(raw_key, ip, request)
+            self._log_failure(ip, request)
             raise AuthenticationFailed("Invalid or expired API key.")
 
         # Record usage asynchronously (best-effort — don't fail auth if this errors)
@@ -72,13 +77,15 @@ class APIKeyAuthentication(BaseAuthentication):
         return request.META.get("REMOTE_ADDR")
 
     @staticmethod
-    def _log_failure(raw_key: str, ip: str | None, request) -> None:
+    def _log_failure(ip: str | None, request) -> None:
         try:
             from gyrokernel.models.user_ext import LoginEvent, LoginLog
 
+            # Do NOT log the raw key or prefix — redact to avoid leaking the
+            # lookup token into log aggregators (ISO 27001 A.12.4.1)
             LoginLog.record(
                 event=LoginEvent.FAILED,
-                username_attempted=f"[api_key:{raw_key[:13]}…]",
+                username_attempted="[api_key:gyro_*]",
                 ip_address=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", "")[:512],
             )

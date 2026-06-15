@@ -53,6 +53,49 @@ _OP_MAP: dict[str, str] = {
     "ilike": "icontains",
 }
 
+# Field name segments that must never be reachable via domain traversal.
+# These protect against ORM-path attacks like ["user.password", "!=", ""]
+# that would let a user enumerate sensitive column values via boolean oracles.
+# ISO 27001 A.14.2.5 — Secure development principles.
+_BLOCKED_SEGMENTS: frozenset[str] = frozenset({
+    "password",
+    "hashed_key",
+    "secret",
+    "token",
+    "hash",
+    "private_key",
+    "secret_key",
+    "api_secret",
+    "smtp_password",
+})
+
+
+def _validate_field(field: str) -> None:
+    """
+    Reject field names that traverse into sensitive model attributes.
+
+    Segments separated by '.' (which become '__' in ORM lookups) are each
+    checked individually.  This allows legitimate FK traversal like
+    'company.name' while blocking 'user.password' or 'api_key.hashed_key'.
+    """
+    if not field or not isinstance(field, str):
+        raise DomainError(f"Domain field must be a non-empty string, got: {field!r}")
+
+    segments = field.replace(".", "__").split("__")
+    for seg in segments:
+        if not seg:
+            raise DomainError(f"Empty segment in domain field '{field}'")
+        if not seg.replace("_", "").isalnum():
+            raise DomainError(
+                f"Domain field segment '{seg}' in '{field}' contains illegal characters. "
+                "Only letters, digits, and underscores are allowed."
+            )
+        if seg in _BLOCKED_SEGMENTS:
+            raise DomainError(
+                f"Field traversal into '{seg}' is not permitted in domain expressions. "
+                "Access to sensitive attributes is restricted."
+            )
+
 
 class DomainEvaluator:
     """Stateless converter from JSON domain lists to Django Q objects."""
@@ -95,8 +138,8 @@ class DomainEvaluator:
 
         field, op, value = condition
 
-        if not isinstance(field, str) or not field:
-            raise DomainError(f"Domain field must be a non-empty string, got: {field!r}")
+        # Validate field name before any ORM translation
+        _validate_field(field)
 
         if op not in _OP_MAP:
             raise DomainError(

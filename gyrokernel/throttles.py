@@ -12,13 +12,12 @@ class APIKeyThrottle(SimpleRateThrottle):
     Per-API-key rate limiting.
 
     Keyed by APIKey.pk so each key has its own rate bucket.
-    Falls back to 'anon' rate for unauthenticated requests.
+    Only fires when the request is authenticated via an API key.
 
     Configure rates in settings:
         REST_FRAMEWORK = {
             "DEFAULT_THROTTLE_RATES": {
                 "apikey": "1000/hour",
-                "anon": "100/hour",
             }
         }
     """
@@ -32,8 +31,36 @@ class APIKeyThrottle(SimpleRateThrottle):
                 "scope": self.scope,
                 "ident": str(api_key.pk),
             }
-        # Fall back to IP-based throttling for session-authenticated requests
-        return None
+        return None  # not an API key request — skip this throttle
+
+
+class SessionUserThrottle(SimpleRateThrottle):
+    """
+    Per-user rate limiting for session-authenticated requests.
+
+    Prevents an authenticated browser/session user from hammering the API
+    without limit — a gap that APIKeyThrottle doesn't cover.
+    ISO 27001 A.13.1.1
+
+    Configure rate in settings:
+        REST_FRAMEWORK = {
+            "DEFAULT_THROTTLE_RATES": {
+                "user": "500/hour",
+            }
+        }
+    """
+
+    scope = "user"
+
+    def get_cache_key(self, request, view) -> str | None:
+        if get_current_api_key() is not None:
+            return None  # already throttled by APIKeyThrottle
+        if request.user and request.user.is_authenticated:
+            return self.cache_format % {
+                "scope": self.scope,
+                "ident": str(request.user.pk),
+            }
+        return None  # anonymous — handled by AnonThrottle
 
 
 class AnonThrottle(SimpleRateThrottle):

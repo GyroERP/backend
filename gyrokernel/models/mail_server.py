@@ -7,6 +7,8 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 
+from django.conf import settings as django_settings
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.db import models
 
 from .base import ActiveModel, TimestampedModel, UUIDModel
@@ -27,9 +29,12 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
     Supports multi-server setups: different servers per company, per from-domain,
     or a global fallback.  pick() selects the best match; send() delivers the mail.
 
-    SMTP password is stored via Fernet encryption when GYROERP_FERNET_KEY is set
-    in settings (recommended for production).  Falls back to plain-text storage
-    when the key is absent (dev/test convenience only).
+    SMTP password storage:
+      - Production (DEBUG=False): Fernet (AES-256) is REQUIRED.
+        Set GYROERP_FERNET_KEY env var or the server will refuse to save a password.
+      - Development (DEBUG=True): falls back to plain-text storage with a log warning.
+
+    ISO 27001 A.10.1.1 — Encryption must be used for sensitive data at rest.
     """
 
     name = models.CharField(max_length=200)
@@ -52,7 +57,7 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
     smtp_password = models.CharField(
         max_length=1024,
         blank=True,
-        help_text="Stored encrypted when GYROERP_FERNET_KEY is configured",
+        help_text="Stored AES-256 encrypted (requires GYROERP_FERNET_KEY in production)",
     )
     from_filter = models.CharField(
         max_length=255,
@@ -65,7 +70,7 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
     )
     debug_mode = models.BooleanField(
         default=False,
-        help_text="Log raw SMTP conversation (never enable in production)",
+        help_text="Log raw SMTP conversation — MUST NOT be enabled in production",
     )
 
     class Meta:
@@ -76,33 +81,57 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
     def __str__(self) -> str:
         return f"{self.name} ({self.smtp_host}:{self.smtp_port})"
 
+    def clean(self):
+        # debug_mode logs the raw SMTP conversation, which includes credentials.
+        # Block it entirely in non-DEBUG environments.  ISO 27001 A.12.4.1.
+        if self.debug_mode and not getattr(django_settings, "DEBUG", False):
+            raise ValidationError(
+                {"debug_mode": "debug_mode must not be enabled in production (DEBUG=False)."}
+            )
+
     # ------------------------------------------------------------------
     # Password encryption helpers
     # ------------------------------------------------------------------
 
     def set_password(self, plain_password: str) -> None:
-        """Encrypt and store SMTP password."""
+        """Encrypt and store the SMTP password."""
         fernet = self._get_fernet()
         if fernet:
             self.smtp_password = fernet.encrypt(plain_password.encode()).decode()
         else:
+            # In production, refuse to store passwords in plain text.
+            if not getattr(django_settings, "DEBUG", False):
+                raise ImproperlyConfigured(
+                    "GYROERP_FERNET_KEY must be set in production to encrypt SMTP passwords. "
+                    "Generate one with: python -c \"from cryptography.fernet import Fernet; "
+                    "print(Fernet.generate_key().decode())\""
+                )
+            logger.warning(
+                "GYROERP_FERNET_KEY not set — SMTP password stored in plain text. "
+                "This is acceptable in development but MUST NOT reach production."
+            )
             self.smtp_password = plain_password
 
     def get_password(self) -> str:
-        """Decrypt and return SMTP password."""
+        """Decrypt and return the SMTP password."""
         fernet = self._get_fernet()
         if fernet and self.smtp_password:
             try:
                 return fernet.decrypt(self.smtp_password.encode()).decode()
             except Exception:
+                # If decryption fails the value may be an un-encrypted legacy entry.
+                # Log and return as-is so existing rows don't silently break.
+                logger.error(
+                    "Failed to decrypt SMTP password for server '%s'. "
+                    "The stored value may be corrupt or was stored without encryption.",
+                    self.name,
+                )
                 return self.smtp_password
         return self.smtp_password
 
     @staticmethod
     def _get_fernet():
         """Return a Fernet instance if GYROERP_FERNET_KEY is configured, else None."""
-        from django.conf import settings as django_settings
-
         key = getattr(django_settings, "GYROERP_FERNET_KEY", None)
         if not key:
             return None
@@ -111,8 +140,10 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
 
             return Fernet(key.encode() if isinstance(key, str) else key)
         except ImportError:
-            logger.warning("cryptography package not installed; SMTP password stored in plain text")
-            return None
+            raise ImproperlyConfigured(
+                "The 'cryptography' package is required for SMTP password encryption. "
+                "Install it with: pip install cryptography"
+            )
 
     # ------------------------------------------------------------------
     # Server selection
@@ -153,6 +184,12 @@ class MailServer(UUIDModel, TimestampedModel, ActiveModel):
 
     def send(self, message: EmailMessage) -> None:
         """Deliver an email.message.EmailMessage via this SMTP server."""
+        if self.debug_mode and not getattr(django_settings, "DEBUG", False):
+            raise RuntimeError(
+                "debug_mode is enabled on mail server '%s' but DEBUG=False. "
+                "Disable debug_mode before sending." % self.name
+            )
+
         password = self.get_password()
         context = ssl.create_default_context()
 

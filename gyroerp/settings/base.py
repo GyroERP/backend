@@ -39,12 +39,17 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # CORS must be first so preflight responses are returned before any
+    # auth/session middleware runs.  Configure GYROERP_CORS_ALLOWED_ORIGINS.
+    "gyrokernel.middleware.cors.CORSMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "gyrokernel.middleware.request_id.RequestIDMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Session timeout must run after AuthenticationMiddleware so request.user is set.
+    "gyrokernel.middleware.session_timeout.SessionTimeoutMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -75,6 +80,16 @@ DATABASES = {
     )
 }
 
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+# LockoutBackend wraps Django's ModelBackend with brute-force lockout.
+# ISO 27001 A.9.4.2 — repeated failed log-on attempts must be restricted.
+AUTHENTICATION_BACKENDS = [
+    "gyrokernel.backends.LockoutBackend",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -82,10 +97,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# ---------------------------------------------------------------------------
+# Internationalisation
+# ---------------------------------------------------------------------------
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# ---------------------------------------------------------------------------
+# Static / media
+# ---------------------------------------------------------------------------
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -93,6 +116,21 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ---------------------------------------------------------------------------
+# File upload limits  — ISO 27001 A.13.1.1 (resource exhaustion / DoS)
+# ---------------------------------------------------------------------------
+
+# Django's in-memory upload limit — files above this threshold are spooled to disk
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10 MB
+
+# GyroERP hard cap applied in Attachment.save() after computing file_size
+GYROERP_MAX_UPLOAD_SIZE_MB = int(os.environ.get("GYROERP_MAX_UPLOAD_SIZE_MB", "25"))
+
+# ---------------------------------------------------------------------------
+# Django REST Framework
+# ---------------------------------------------------------------------------
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -104,25 +142,51 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_CLASSES": [
         "gyrokernel.throttles.APIKeyThrottle",
+        "gyrokernel.throttles.SessionUserThrottle",
         "gyrokernel.throttles.AnonThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "apikey": "1000/hour",
-        "anon": "100/hour",
+        "apikey": "1000/hour",   # per API key  — ISO 27001 A.13.1.1
+        "user": "500/hour",      # per session-authenticated user
+        "anon": "100/hour",      # per IP for unauthenticated requests
     },
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "gyrokernel.pagination.GyroPageNumberPagination",
     "PAGE_SIZE": 25,
 }
 
-# Optional Fernet key for encrypting sensitive DB fields (e.g. SMTP passwords).
+# ---------------------------------------------------------------------------
+# Fernet field-level encryption (SMTP passwords, etc.)
+# ISO 27001 A.10.1.1 — sensitive data at rest must be encrypted
+# ---------------------------------------------------------------------------
+
 # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-# Set via environment variable in production; omit in development.
+# Required in production (production.py will raise if absent).
 GYROERP_FERNET_KEY = os.environ.get("GYROERP_FERNET_KEY", "")
+
+# ---------------------------------------------------------------------------
+# Brute-force lockout thresholds  — ISO 27001 A.9.4.2
+# ---------------------------------------------------------------------------
+
+GYROERP_BRUTE_FORCE_MAX_ATTEMPTS = int(os.environ.get("GYROERP_BRUTE_FORCE_MAX_ATTEMPTS", "10"))
+GYROERP_BRUTE_FORCE_WINDOW_MINUTES = int(os.environ.get("GYROERP_BRUTE_FORCE_WINDOW_MINUTES", "10"))
+
+# ---------------------------------------------------------------------------
+# CORS — ISO 27001 A.13.1.1
+# ---------------------------------------------------------------------------
+
+# Comma-separated list of allowed origins, e.g. "https://app.example.com,https://admin.example.com"
+# Empty by default (no cross-origin access).  Configure per environment.
+GYROERP_CORS_ALLOWED_ORIGINS: list[str] = env_list("GYROERP_CORS_ALLOWED_ORIGINS", [])
+GYROERP_CORS_ALLOW_CREDENTIALS: bool = env_bool("GYROERP_CORS_ALLOW_CREDENTIALS", False)
+
+# ---------------------------------------------------------------------------
+# Celery
+# ---------------------------------------------------------------------------
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/1")
 CELERY_RESULT_BACKEND = "django-db"
@@ -133,6 +197,10 @@ CELERY_TIMEZONE = "UTC"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
 
 LOGGING = {
     "version": 1,
