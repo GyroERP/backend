@@ -3,7 +3,7 @@
 # Testing
 pytest==8.4.2
 pytest-django==4.11.1
-coverage==7.10.7
+coverage==7.14.1
 
 # Linting & formatting
 ruff==0.14.3
